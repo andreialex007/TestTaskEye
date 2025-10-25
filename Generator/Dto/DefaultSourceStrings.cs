@@ -1,4 +1,4 @@
-namespace TestTaskEye.Dto;
+namespace Generator.Dto;
 
 public static class DefaultSourceStrings
 {

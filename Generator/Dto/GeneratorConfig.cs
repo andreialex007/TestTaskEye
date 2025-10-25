@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace TestTaskEye.Dto;
+namespace Generator.Dto;
 
 public class GeneratorConfig
 {

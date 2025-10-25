@@ -1,10 +1,10 @@
 ﻿using CommandLine;
 using Serilog;
 using Serilog.Templates;
-using TestTaskEye.Core;
-using TestTaskEye.Dto;
+using Generator.Core;
+using Generator.Dto;
 
-namespace TestTaskEye
+namespace Generator
 {
     internal class Program
     {

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTaskEye", "TestTaskEye\TestTaskEye.csproj", "{055FE5A7-4944-4535-AACC-A293ABD45A03}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator", "Generator\Generator.csproj", "{055FE5A7-4944-4535-AACC-A293ABD45A03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSorter", "FileSorter\FileSorter.csproj", "{86220EA7-2459-473A-BCF8-4CF456DAA1C5}"
 EndProject

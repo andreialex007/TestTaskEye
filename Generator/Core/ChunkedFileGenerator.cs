@@ -1,9 +1,9 @@
 using Humanizer;
 using Serilog;
 using SerilogTimings;
-using TestTaskEye.Dto;
+using Generator.Dto;
 
-namespace TestTaskEye.Core;
+namespace Generator.Core;
 
 public class ChunkedFileGenerator
 {

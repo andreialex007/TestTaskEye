@@ -15,13 +15,8 @@ public readonly struct LineData : IComparable<LineData>
 
     public int CompareTo(LineData other)
     {
-        // First sort by text (alphabetically)
         var textComparison = string.Compare(Text, other.Text, StringComparison.Ordinal);
-        if (textComparison != 0)
-            return textComparison;
-
-        // If text is the same, sort by number (ascending)
-        return Number.CompareTo(other.Number);
+        return textComparison != 0 ? textComparison : Number.CompareTo(other.Number);
     }
 
     public static LineData Parse(string line)
