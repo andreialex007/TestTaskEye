@@ -144,7 +144,7 @@ public class ParallelExternalMergeSorter
             var readers = chunkFiles
                 .Select(f =>
                 {
-                    var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024);
+                    var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.Read, 16 * 1024 * 1024);
                     return new StreamReader(fs, enc);
                 })
                 .ToList();

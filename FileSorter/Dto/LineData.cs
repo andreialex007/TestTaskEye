@@ -25,11 +25,14 @@ public readonly struct LineData : IComparable<LineData>
         if (dotIndex == -1)
             throw new FormatException($"Invalid line format: {line}");
 
-        var numberPart = line[..dotIndex].Trim();
-        var textPart = line[(dotIndex + 1)..].Trim();
+        var span = line.AsSpan();
+        var numberSpan = span[..dotIndex].Trim();
+        var textSpan = span[(dotIndex + 1)..].Trim();
 
-        if (!int.TryParse(numberPart, out var number))
+        if (!int.TryParse(numberSpan, out var number))
             throw new FormatException($"Invalid number in line: {line}");
+
+        var textPart = new string(textSpan);
 
         return new LineData(number, textPart, line);
     }
