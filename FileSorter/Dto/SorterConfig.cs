@@ -5,7 +5,7 @@ namespace FileSorter.Dto;
 public class SorterConfig
 {
     [Option('i', "input", Required = false, HelpText = "Input file path (default: input.txt)")]
-    public string InputFilePath { get; set; } = @"C:\proj\TestTaskEye\TestTaskEye\bin\Debug\net9.0\output.txt";
+    public string InputFilePath { get; set; } = @"input.txt";
 
     [Option('o', "output", Required = false, HelpText = "Output file path (default: output.txt)")]
     public string OutputFilePath { get; set; } = "output.txt";
