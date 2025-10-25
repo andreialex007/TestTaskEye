@@ -8,7 +8,7 @@ public static class FileTools
     {
         long bytesWritten = 0;
 
-        using var writer = new StreamWriter(filePath, false, Encoding.UTF8, bufferSize: 1024 * 1024);
+        using var writer = new StreamWriter(filePath, false, new UTF8Encoding(false), bufferSize: 1024 * 1024);
 
         while (bytesWritten < targetBytes)
         {

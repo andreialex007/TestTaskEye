@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Read(//c/Users/user/Downloads/3dEYETestTask-main/BackendTestTask.TestFileGenerator/**)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dir \"C:\\proj\\TestTaskEye\")",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []
