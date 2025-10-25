@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace TestTaskEye;
+namespace TestTaskEye.Core;
 
 public static class FileTools
 {
