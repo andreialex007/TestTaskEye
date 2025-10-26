@@ -1,7 +1,15 @@
+using System.Collections.Concurrent;
+
 namespace FileSorter.Dto;
 
 public readonly struct LineData(int number, string text, string originalLine) : IComparable<LineData>
 {
+    /// <summary>
+    /// Thread-safe cache for text values to reduce string allocations.
+    /// Since text values repeat frequently (limited fruit names), we reuse identical strings.
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, string> _textCache = new();
+
     public int Number { get; } = number;
     public string Text { get; } = text;
     public string OriginalLine { get; } = originalLine;
@@ -27,6 +35,10 @@ public readonly struct LineData(int number, string text, string originalLine) : 
 
         var textPart = new string(textSpan);
 
-        return new LineData(number, textPart, line);
+        // Reuse cached string if seen before to reduce memory allocations
+        // GetOrAdd is thread-safe and atomic
+        var cachedText = _textCache.GetOrAdd(textPart, textPart);
+
+        return new LineData(number, cachedText, line);
     }
 }
