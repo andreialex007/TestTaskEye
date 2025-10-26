@@ -16,6 +16,9 @@ public class ParallelExternalMergeSorter
     // Conversion constants
     private const long BytesPerMegabyte = 1024L * 1024L;
 
+    // Encoding constant - reused across all file operations to avoid repeated object creation
+    private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
+
     private readonly SorterConfig _config;
     private readonly long _chunkSizeBytes;
 
@@ -62,10 +65,9 @@ public class ParallelExternalMergeSorter
 
         using (Operation.Time("📖 Splitting into raw chunks"))
         {
-            var encoding = new UTF8Encoding(false);
-            var newLineByteCount = encoding.GetByteCount(Environment.NewLine);
+            var newLineByteCount = Utf8NoBom.GetByteCount(Environment.NewLine);
 
-            using var reader = new StreamReader(File.OpenRead(_config.InputFilePath), encoding, true, StandardBufferSize);
+            using var reader = new StreamReader(File.OpenRead(_config.InputFilePath), Utf8NoBom, true, StandardBufferSize);
 
             StreamWriter? writer = null;
             var size = 0;
@@ -78,12 +80,12 @@ public class ParallelExternalMergeSorter
                     writer?.Dispose();
                     var path = Path.Combine(_config.TempDirectory, $"raw_chunk_{index++:D4}.txt");
                     chunkCount++;
-                    writer = new StreamWriter(path, false, encoding, StandardBufferSize);
+                    writer = new StreamWriter(path, false, Utf8NoBom, StandardBufferSize);
                     size = 0;
                 }
 
                 writer.WriteLine(line);
-                size += encoding.GetByteCount(line) + newLineByteCount;
+                size += Utf8NoBom.GetByteCount(line) + newLineByteCount;
             }
 
             writer?.Dispose();
@@ -117,13 +119,13 @@ public class ParallelExternalMergeSorter
                     Log.Information("🔄 Sorting chunk {Index}/{Total}...", i + 1, rawChunkFiles.Count);
                     var sortedChunkFile = Path.Combine(_config.TempDirectory, $"sorted_chunk_{i:D4}.txt");
 
-                    var sortedLines = File.ReadAllLines(rawChunkFile, new UTF8Encoding(false))
+                    var sortedLines = File.ReadAllLines(rawChunkFile, Utf8NoBom)
                         .Select(LineData.Parse)
                         .ToArray();
 
                     Array.Sort(sortedLines);
 
-                    using (var writer = new StreamWriter(sortedChunkFile, false, new UTF8Encoding(false), StandardBufferSize))
+                    using (var writer = new StreamWriter(sortedChunkFile, false, Utf8NoBom, StandardBufferSize))
                     {
                         foreach (var line in sortedLines)
                             writer.WriteLine(line.OriginalLine);
@@ -143,16 +145,14 @@ public class ParallelExternalMergeSorter
     {
         using (Operation.Time("🔗 Merging chunks"))
         {
-            var enc = new UTF8Encoding(false);
-
             using var outputFileStream = new FileStream(_config.OutputFilePath, FileMode.Create, FileAccess.Write, FileShare.None, OutputWriterBufferSize);
-            using var writer = new StreamWriter(outputFileStream, enc);
+            using var writer = new StreamWriter(outputFileStream, Utf8NoBom);
 
             var readers = chunkFiles
                 .Select(f =>
                 {
                     var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.Read, ChunkReaderBufferSize);
-                    return new StreamReader(fs, enc);
+                    return new StreamReader(fs, Utf8NoBom);
                 })
                 .ToList();
 

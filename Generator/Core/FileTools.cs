@@ -7,11 +7,17 @@ public static class FileTools
     private const int StreamWriterBufferSize = 1 * 1024 * 1024; // 1 MB
     private const int FileMergeBufferSize = 10 * 1024 * 1024; // 10 MB
 
+    /// <summary>
+    /// UTF-8 encoding without BOM (Byte Order Mark).
+    /// Reused across all file operations to avoid repeated object creation.
+    /// </summary>
+    private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
+
     public static void GenerateFileChunk(string filePath, long targetBytes, int maxNumber, string[] sourceStrings)
     {
         long bytesWritten = 0;
 
-        using var writer = new StreamWriter(filePath, false, new UTF8Encoding(false), bufferSize: StreamWriterBufferSize);
+        using var writer = new StreamWriter(filePath, false, Utf8NoBom, bufferSize: StreamWriterBufferSize);
 
         while (bytesWritten < targetBytes)
         {
