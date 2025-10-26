@@ -6,11 +6,6 @@ public static class FileTools
 {
     private const int StreamWriterBufferSize = 1 * 1024 * 1024; // 1 MB
     private const int FileMergeBufferSize = 10 * 1024 * 1024; // 10 MB
-
-    /// <summary>
-    /// UTF-8 encoding without BOM (Byte Order Mark).
-    /// Reused across all file operations to avoid repeated object creation.
-    /// </summary>
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
 
     public static void GenerateFileChunk(string filePath, long targetBytes, int maxNumber, string[] sourceStrings)
