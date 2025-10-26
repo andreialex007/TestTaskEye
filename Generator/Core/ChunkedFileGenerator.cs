@@ -38,7 +38,7 @@ public class ChunkedFileGenerator
                 Parallel.For(0, cores, index =>
                 {
                     tempFiles[index] = $"temp_{index}.txt";
-                    FileTools.GenerateFileChunk(tempFiles[index], bytesPerCore, index, _config.MaxNumber, _sourceStrings);
+                    FileTools.GenerateFileChunk(tempFiles[index], bytesPerCore, _config.MaxNumber, _sourceStrings);
                 });
             }
 

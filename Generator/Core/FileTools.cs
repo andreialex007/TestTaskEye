@@ -4,11 +4,14 @@ namespace Generator.Core;
 
 public static class FileTools
 {
-    public static void GenerateFileChunk(string filePath, long targetBytes, int coreIndex, int maxNumber, string[] sourceStrings)
+    private const int StreamWriterBufferSize = 1 * 1024 * 1024; // 1 MB
+    private const int FileMergeBufferSize = 10 * 1024 * 1024; // 10 MB
+
+    public static void GenerateFileChunk(string filePath, long targetBytes, int maxNumber, string[] sourceStrings)
     {
         long bytesWritten = 0;
 
-        using var writer = new StreamWriter(filePath, false, new UTF8Encoding(false), bufferSize: 1024 * 1024);
+        using var writer = new StreamWriter(filePath, false, new UTF8Encoding(false), bufferSize: StreamWriterBufferSize);
 
         while (bytesWritten < targetBytes)
         {
@@ -25,14 +28,12 @@ public static class FileTools
 
     public static void MergeFiles(string[] tempFiles, string outputFile)
     {
-        const int bufferSize = 10 * 1024 * 1024; // 10MB buffer
-
-        using var output = new FileStream(outputFile, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize);
+        using var output = new FileStream(outputFile, FileMode.Create, FileAccess.Write, FileShare.None, FileMergeBufferSize);
 
         foreach (var tempFile in tempFiles)
         {
-            using var input = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
-            input.CopyTo(output, bufferSize);
+            using var input = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, FileMergeBufferSize);
+            input.CopyTo(output, FileMergeBufferSize);
         }
     }
 }

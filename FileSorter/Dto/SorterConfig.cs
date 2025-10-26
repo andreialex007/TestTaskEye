@@ -10,7 +10,7 @@ public class SorterConfig
     [Option('o', "output", Required = false, HelpText = "Output file path (default: output.txt)")]
     public string OutputFilePath { get; set; } = "output.txt";
 
-    [Option('c', "chunk-size", Required = false, HelpText = "Chunk size in MB (default: 100 MB)")]
+    [Option('c', "chunk-size", Required = false, Min = 1, HelpText = "Chunk size in MB (default: 100 MB, must be >= 1)")]
     public int ChunkSizeMB { get; set; } = 100;
 
     [Option('t', "temp-dir", Required = false, HelpText = "Temporary directory for chunk files (default: ./temp)")]

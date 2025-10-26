@@ -145,7 +145,7 @@ public class ParallelExternalMergeSorter
         {
             var enc = new UTF8Encoding(false);
 
-            var outputFileStream = new FileStream(_config.OutputFilePath, FileMode.Create, FileAccess.Write, FileShare.None, OutputWriterBufferSize);
+            using var outputFileStream = new FileStream(_config.OutputFilePath, FileMode.Create, FileAccess.Write, FileShare.None, OutputWriterBufferSize);
             using var writer = new StreamWriter(outputFileStream, enc);
 
             var readers = chunkFiles
@@ -156,23 +156,28 @@ public class ParallelExternalMergeSorter
                 })
                 .ToList();
 
-            var queue = readers
-                .Select((reader, i) => (index: i, LineData.Parse(reader.ReadLine()!)))
-                .ToPriorityQueue();
-
-            // K-WAY MERGE LOOP
-            while (queue.TryDequeue(out var readerIndex, out var data))
+            try
             {
-                writer.WriteLine(data.OriginalLine);
+                var queue = readers
+                    .Select((reader, i) => (index: i, LineData.Parse(reader.ReadLine()!)))
+                    .ToPriorityQueue();
+                
+                // K-WAY MERGE LOOP
+                while (queue.TryDequeue(out var readerIndex, out var data))
+                {
+                    writer.WriteLine(data.OriginalLine);
 
-                var nextLine = readers[readerIndex].ReadLine();
-                if (nextLine == null) continue;
+                    var nextLine = readers[readerIndex].ReadLine();
+                    if (nextLine == null) continue;
 
-                var nextData = LineData.Parse(nextLine);
-                queue.Enqueue(readerIndex, nextData);
+                    var nextData = LineData.Parse(nextLine);
+                    queue.Enqueue(readerIndex, nextData);
+                }
             }
-
-            readers.ForEach(x => x.Dispose());
+            finally
+            {
+                readers.ForEach(x => x.Dispose());
+            }
         }
     }
 }
