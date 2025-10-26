@@ -38,7 +38,7 @@ Sorts large files using Parallel External Merge Sort algorithm.
 - String interning for reduced memory allocations
 - Optimized span-based parsing
 - Sorts by text alphabetically, then by number
-- **~31.6s for 2GB file** (10.0s sorting + 16.8s merge + 4.8s overhead)
+- **~14.7 min for 50GB file** (4.9 min sorting + 7.8 min merge)
 
 **Usage:**
 ```bash
@@ -159,20 +159,38 @@ dotnet run -c Release
 | Generate | 2 GB | ~2.5s | 1.4s generation + 1.0s merge + 0.1s cleanup |
 | Sort | 2 GB | **31.6s** | 10.0s sorting + 16.8s merge + 4.8s overhead |
 
-**Sorting Throughput:** ~63 MB/s
+**Sorting Details:**
+- **Chunk size:** 100 MB
+- **Total chunks:** 21
+- **Merge strategy:** Single-pass K-way merge
+- **Throughput:** ~63 MB/s
+
+### Actual Performance (50 GB file)
+
+| Operation | File Size | Time | Breakdown |
+|-----------|-----------|------|-----------|
+| Generate | 50 GB | ~65s | 22.5s generation + 41.1s merge + 1.8s cleanup |
+| Sort | 50 GB | **884.8s (14.7 min)** | 293.7s sorting + 468.2s merge + 2.1s cleanup |
+
+**Sorting Details:**
+- **Chunk size:** 50 MB
+- **Total chunks:** 1024
+- **Merge strategy:** Single-pass K-way merge (all 1024 files merged directly)
+- **Throughput:** ~56.5 MB/s
 
 ### Projected Performance (100 GB file)
 
 | Phase | Estimated Time | Notes |
 |-------|---------------|-------|
-| Sorting | ~8-9 min | Scales linearly with data size |
-| Merging | ~30-35 min | Scales with data size + O(log k) priority queue overhead (k ≈ 1000 chunks) |
-| **Total** | **~40-45 min** | With 100MB chunks, creates ~1000 intermediate files |
+| Sorting | ~9.8 min | Scales linearly with data size (293.7s × 2) |
+| Merging | ~17.2 min | Scales with data size × 1.1 priority queue overhead factor |
+| **Total** | **~27 min** | With 50MB chunks, creates ~2048 intermediate files |
 
 **Notes on 100 GB Estimation:**
-- Assumes same hardware and chunk size (100 MB)
-- Merge phase is I/O bound but has additional priority queue overhead with 1000 chunks vs 21 chunks
-- Priority queue operations: log(1000) ≈ 10 vs log(21) ≈ 4.4 comparisons per operation
+- Based on actual 50 GB benchmark results
+- Assumes same hardware and chunk size (50 MB)
+- Priority queue overhead: log(2048)/log(1024) = 11/10 = 1.1× for 2048 chunks
+- Single-pass K-way merge handles 2048 files efficiently with 2GB RAM usage
 - Actual time may vary based on disk speed (SSD vs HDD significantly impacts merge performance)
 
 ## Key Optimizations
@@ -192,9 +210,9 @@ dotnet run -c Release
 - **K-way merge with PriorityQueue** - Efficient merging of sorted chunks
 - **Large I/O buffers:**
   - 4MB standard buffer for chunk reading/writing
-  - 16MB buffer per chunk reader during merge (21 chunks × 16MB = 336MB total)
+  - 16MB buffer per chunk reader during merge (1024 chunks × 16MB = ~16GB RAM for single-pass)
   - 128MB output writer buffer for final file
-- **100MB chunk size** - Optimal balance between memory usage and merge complexity
+- **50MB chunk size** - Optimal for 50-100GB files (creates 1000-2000 chunks, single-pass K-way merge)
 
 ## Requirements
 
