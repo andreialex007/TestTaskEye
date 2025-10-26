@@ -35,8 +35,10 @@ Sorts large files using Parallel External Merge Sort algorithm.
 - Parallel chunk sorting with Array.Sort
 - K-way merge with PriorityQueue
 - Memory-efficient (configurable chunk size)
+- String interning for reduced memory allocations
+- Optimized span-based parsing
 - Sorts by text alphabetically, then by number
-- ~41s for 1GB file (16.8s sorting + 19.4s merging)
+- **~31.6s for 2GB file** (10.0s sorting + 16.8s merge + 4.8s overhead)
 
 **Usage:**
 ```bash
@@ -150,24 +152,49 @@ dotnet run -c Release
 
 **Hardware:** Modern system with 32 cores
 
-| Operation | File Size | Time | Breakdown                                   |
-|-----------|-----------|------|---------------------------------------------|
-| Generate | 2 GB | 2.5s | 1.4s generation + 1.0s merge + 0.1s cleanup |
-| Sort | 2 GB | ~40s | 4.5s split + 17.2s sort + 18.4s merge       |
+### Actual Performance (2 GB file)
+
+| Operation | File Size | Time | Breakdown |
+|-----------|-----------|------|-----------|
+| Generate | 2 GB | ~2.5s | 1.4s generation + 1.0s merge + 0.1s cleanup |
+| Sort | 2 GB | **31.6s** | 10.0s sorting + 16.8s merge + 4.8s overhead |
+
+**Sorting Throughput:** ~63 MB/s
+
+### Projected Performance (100 GB file)
+
+| Phase | Estimated Time | Notes |
+|-------|---------------|-------|
+| Sorting | ~8-9 min | Scales linearly with data size |
+| Merging | ~30-35 min | Scales with data size + O(log k) priority queue overhead (k ≈ 1000 chunks) |
+| **Total** | **~40-45 min** | With 100MB chunks, creates ~1000 intermediate files |
+
+**Notes on 100 GB Estimation:**
+- Assumes same hardware and chunk size (100 MB)
+- Merge phase is I/O bound but has additional priority queue overhead with 1000 chunks vs 21 chunks
+- Priority queue operations: log(1000) ≈ 10 vs log(21) ≈ 4.4 comparisons per operation
+- Actual time may vary based on disk speed (SSD vs HDD significantly impacts merge performance)
 
 ## Key Optimizations
 
 ### Generator
 - Parallel.For for multi-core generation
-- 16MB buffers for I/O
+- 1MB write buffers for line-by-line streaming
+- 10MB buffers for file merging
 - Direct file merging (no intermediate processing)
 
 ### FileSorter
-- Span-based parsing (reduced allocations)
-- Array.Sort (faster than LINQ OrderBy)
-- Pre-allocated arrays
-- 16MB buffers for I/O
-- 100MB chunk size for optimal memory/performance balance
+- **String interning** - Reuses identical text strings via ConcurrentDictionary (70-90% memory reduction)
+- **Span-based parsing** - Zero-allocation line parsing using ReadOnlySpan<char>
+- **UTF-8 encoding reuse** - Single static encoding instance (eliminates repeated allocations)
+- **Optimized validation** - Minimal checks in hot paths for performance
+- **Parallel chunk sorting** - Array.Sort on multiple chunks simultaneously
+- **K-way merge with PriorityQueue** - Efficient merging of sorted chunks
+- **Large I/O buffers:**
+  - 4MB standard buffer for chunk reading/writing
+  - 16MB buffer per chunk reader during merge (21 chunks × 16MB = 336MB total)
+  - 128MB output writer buffer for final file
+- **100MB chunk size** - Optimal balance between memory usage and merge complexity
 
 ## Requirements
 
