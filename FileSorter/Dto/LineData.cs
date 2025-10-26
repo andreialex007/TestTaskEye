@@ -1,17 +1,10 @@
 namespace FileSorter.Dto;
 
-public readonly struct LineData : IComparable<LineData>
+public readonly struct LineData(int number, string text, string originalLine) : IComparable<LineData>
 {
-    public int Number { get; }
-    public string Text { get; }
-    public string OriginalLine { get; }
-
-    public LineData(int number, string text, string originalLine)
-    {
-        Number = number;
-        Text = text;
-        OriginalLine = originalLine;
-    }
+    public int Number { get; } = number;
+    public string Text { get; } = text;
+    public string OriginalLine { get; } = originalLine;
 
     public int CompareTo(LineData other)
     {
